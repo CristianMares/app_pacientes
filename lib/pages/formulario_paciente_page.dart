@@ -18,7 +18,6 @@ class FormularioPacientePage extends StatefulWidget {
 
 class _FormularioPacientePageState extends State<FormularioPacientePage> {
   final _form = GlobalKey<FormState>();
-  late final _id = TextEditingController(text: widget.paciente?.idPaciente.toString() ?? '');
   late final _nombre = TextEditingController(text: widget.paciente?.nombre ?? '');
   late final _aPaterno = TextEditingController(text: widget.paciente?.aPaterno ?? '');
   late final _aMaterno = TextEditingController(text: widget.paciente?.aMaterno ?? '');
@@ -37,7 +36,7 @@ class _FormularioPacientePageState extends State<FormularioPacientePage> {
 
   @override
   void dispose() {
-    for (final c in [_id, _nombre, _aPaterno, _aMaterno, _direccion, _telefono, _peso, _altura]) {
+    for (final c in [_nombre, _aPaterno, _aMaterno, _direccion, _telefono, _peso, _altura]) {
       c.dispose();
     }
     super.dispose();
@@ -53,7 +52,8 @@ class _FormularioPacientePageState extends State<FormularioPacientePage> {
     setState(() => _guardando = true);
 
     final p = Paciente(
-      idPaciente: int.parse(_id.text.trim()),
+      // Al crear la API asigna el Id
+      idPaciente: widget.paciente?.idPaciente ?? 0,
       nombre: _nombre.text.trim(),
       aPaterno: _aPaterno.text.trim(),
       aMaterno: _aMaterno.text.trim(),
@@ -92,21 +92,7 @@ class _FormularioPacientePageState extends State<FormularioPacientePage> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
-            _Seccion('Identificación'),
-            TextFormField(
-              controller: _id,
-              enabled: !_editando,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(labelText: 'Id del paciente'),
-              validator: (v) {
-                if (_requerido(v) != null) return 'Campo obligatorio';
-                final n = int.tryParse(v!.trim());
-                if (n == null || n <= 0) return 'Debe ser un número mayor a 0';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
+            _Seccion('Datos personales'),
             TextFormField(
               controller: _nombre,
               textCapitalization: TextCapitalization.words,

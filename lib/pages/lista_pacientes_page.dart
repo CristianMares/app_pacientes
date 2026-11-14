@@ -157,6 +157,8 @@ class _ListaPacientesPageState extends State<ListaPacientesPage> {
               padding: const EdgeInsets.fromLTRB(20, 20, 12, 12),
               child: Row(
                 children: [
+                  Image.asset('assets/logo.png', height: 48),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
