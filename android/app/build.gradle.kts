@@ -1,3 +1,10 @@
+// Llave fija para firmar. En CI se crea key.properties desde los secrets del repo;
+// si no existe se firma con la llave de depuración.
+val llave = java.util.Properties().apply {
+    val f = rootProject.file("key.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -29,11 +36,20 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (!llave.isEmpty) {
+                keyAlias = llave.getProperty("keyAlias")
+                keyPassword = llave.getProperty("keyPassword")
+                storePassword = llave.getProperty("storePassword")
+                storeFile = file(llave.getProperty("storeFile"))
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (llave.isEmpty) "debug" else "release")
         }
     }
 }
