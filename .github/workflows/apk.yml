@@ -43,6 +43,19 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings
       - run: flutter test
+
+      # Capturas de pantalla en tema claro y oscuro
+      - name: Capturas
+        run: |
+          set -e
+          curl -sSL -o /tmp/inter.zip https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip
+          mkdir -p /tmp/inter-zip /tmp/inter
+          unzip -q /tmp/inter.zip -d /tmp/inter-zip
+          find /tmp/inter-zip -name 'Inter-*.ttf' -exec cp {} /tmp/inter/ \;
+          ls /tmp/inter
+          export FLUTTER_ROOT=$(dirname $(dirname $(which flutter)))
+          CAPTURAS=1 FUENTES=/tmp/inter flutter test test/capturas_test.dart --update-goldens
+          cd test/capturas && zip -q ../../capturas.zip *.png
       - run: flutter build apk --release
 
       - uses: actions/upload-artifact@v4
@@ -57,3 +70,5 @@ jobs:
           cp build/app/outputs/flutter-apk/app-release.apk app_pacientes.apk
           gh release delete latest -y --cleanup-tag || true
           gh release create latest app_pacientes.apk --title "APK" --notes "Descargar e instalar en el celular."
+          gh release delete capturas -y --cleanup-tag || true
+          gh release create capturas capturas.zip test/capturas/*.png --title "Capturas" --notes "Pantallas en tema claro y oscuro." --prerelease

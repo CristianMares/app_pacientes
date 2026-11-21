@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'pages/lista_pacientes_page.dart';
+import 'pages/splash_page.dart';
 import 'tema.dart';
 
 void main() {
@@ -15,8 +15,10 @@ class AppPacientes extends StatelessWidget {
     return MaterialApp(
       title: 'Pacientes',
       debugShowCheckedModeBanner: false,
-      theme: crearTema(),
-      home: const ListaPacientesPage(),
+      theme: crearTema(Brightness.light),
+      darkTheme: crearTema(Brightness.dark),
+      themeMode: ThemeMode.system,
+      home: const SplashPage(),
     );
   }
 }

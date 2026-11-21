@@ -62,9 +62,9 @@ class _ConfiguracionPageState extends State<ConfiguracionPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         children: [
-          const Text(
+          Text(
             'Escribe la dirección donde está publicada la API, por ejemplo la IP de la lap en la misma red Wi-Fi.',
-            style: TextStyle(color: Colores.secundario),
+            style: TextStyle(color: context.paleta.secundario),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -74,7 +74,7 @@ class _ConfiguracionPageState extends State<ConfiguracionPage> {
             onChanged: (_) => setState(() => _conectado = null),
             decoration: const InputDecoration(
               labelText: 'URL',
-              hintText: 'http://192.168.1.100:5080',
+              hintText: 'http://pacientes.runasp.net',
             ),
           ),
           const SizedBox(height: 12),
@@ -82,10 +82,10 @@ class _ConfiguracionPageState extends State<ConfiguracionPage> {
             Row(
               children: [
                 Icon(_conectado! ? Icons.check_circle_outline : Icons.error_outline,
-                    size: 18, color: _conectado! ? Colores.primario : Colores.cancelado),
+                    size: 18, color: _conectado! ? context.paleta.primario : context.paleta.cancelado),
                 const SizedBox(width: 8),
                 Text(_conectado! ? 'Conexión correcta' : 'No responde en esa dirección',
-                    style: TextStyle(color: _conectado! ? Colores.primario : Colores.cancelado)),
+                    style: TextStyle(color: _conectado! ? context.paleta.primario : context.paleta.cancelado)),
               ],
             ),
           const SizedBox(height: 24),

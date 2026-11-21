@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../models/paciente.dart';
-import '../services/api_service.dart';
 import '../tema.dart';
+import '../util/formato.dart';
+import '../widgets/dialogos.dart';
 import '../widgets/etiqueta.dart';
 import 'formulario_paciente_page.dart';
 
@@ -34,54 +35,21 @@ class _DetallePacientePageState extends State<DetallePacientePage> {
   }
 
   Future<void> _cambiarEstatus() async {
-    final cancelar = _p.activo;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        title: Text(cancelar ? 'Cancelar paciente' : 'Reactivar paciente'),
-        content: Text(cancelar
-            ? '${_p.nombreCompleto} quedará como cancelado. Podrás reactivarlo después.'
-            : '${_p.nombreCompleto} volverá a estar activo.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(
-                foregroundColor: cancelar ? Colores.cancelado : Colores.primario),
-            child: Text(cancelar ? 'Sí, cancelar' : 'Sí, reactivar'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true) return;
-
     setState(() => _procesando = true);
-    try {
-      final p = cancelar
-          ? await ApiService.cancelar(_p.idPaciente)
-          : await ApiService.reactivar(_p.idPaciente);
-      if (!mounted) return;
-      setState(() {
-        _p = p;
+    final r = await cambiarEstatus(context, _p);
+    if (!mounted) return;
+    setState(() {
+      _procesando = false;
+      if (r != null) {
+        _p = r;
         _cambio = true;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(cancelar ? 'Paciente cancelado' : 'Paciente reactivado')));
-    } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.mensaje)));
       }
-    } finally {
-      if (mounted) setState(() => _procesando = false);
-    }
+    });
   }
-
-  String _n(double v) => v == v.roundToDouble() ? v.toInt().toString() : v.toString();
 
   @override
   Widget build(BuildContext context) {
+    final p = context.paleta;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -93,7 +61,11 @@ class _DetallePacientePageState extends State<DetallePacientePage> {
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
           actions: [
             if (_p.activo)
-              IconButton(tooltip: 'Editar', onPressed: _editar, icon: const Icon(Icons.edit_outlined)),
+              IconButton(
+                tooltip: 'Editar',
+                onPressed: _editar,
+                icon: Icon(Icons.edit_outlined, color: p.primario),
+              ),
           ],
         ),
         body: ListView(
@@ -107,12 +79,9 @@ class _DetallePacientePageState extends State<DetallePacientePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(_p.nombreCompleto,
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                      Text(_p.nombreCompleto, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                       const SizedBox(height: 6),
-                      _p.activo
-                          ? const Etiqueta('Activo')
-                          : const Etiqueta('Cancelado', cancelado: true),
+                      _p.activo ? const Etiqueta('Activo') : const Etiqueta('Cancelado', cancelado: true),
                     ],
                   ),
                 ),
@@ -121,13 +90,13 @@ class _DetallePacientePageState extends State<DetallePacientePage> {
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colores.campo, borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: p.campo, borderRadius: BorderRadius.circular(12)),
               child: Row(
                 children: [
                   _Dato('IMC', _p.imc.toStringAsFixed(1), grande: true),
                   _Dato('Categoría', _p.categoriaImc),
-                  _Dato('Peso', '${_n(_p.peso)} kg'),
-                  _Dato('Altura', '${_n(_p.altura)} cm'),
+                  _Dato('Peso', '${numero(_p.peso)} kg'),
+                  _Dato('Altura', '${numero(_p.altura)} cm'),
                 ],
               ),
             ),
@@ -135,13 +104,19 @@ class _DetallePacientePageState extends State<DetallePacientePage> {
             _Fila(Icons.phone_outlined, 'Teléfono', _p.telefono),
             const Divider(),
             _Fila(Icons.place_outlined, 'Dirección', _p.direccion),
+            const Divider(),
+            _Fila(Icons.event_outlined, 'Registrado',
+                _p.fechaRegistro == null ? 'Sin dato' : fecha(_p.fechaRegistro!)),
+            const Divider(),
+            _Fila(Icons.update, 'Última modificación',
+                _p.fechaModificacion == null ? 'Sin cambios' : fecha(_p.fechaModificacion!)),
             const SizedBox(height: 32),
             _p.activo
                 ? OutlinedButton(
                     onPressed: _procesando ? null : _cambiarEstatus,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colores.cancelado,
-                      side: const BorderSide(color: Colores.canceladoFondo, width: 1.5),
+                      foregroundColor: p.cancelado,
+                      side: BorderSide(color: p.canceladoFondo, width: 1.5),
                     ),
                     child: const Text('Cancelar paciente'),
                   )
@@ -165,17 +140,18 @@ class _Dato extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.paleta;
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(etiqueta, style: const TextStyle(fontSize: 12, color: Colores.secundario)),
+          Text(etiqueta, style: TextStyle(fontSize: 12, color: p.secundario)),
           const SizedBox(height: 4),
           Text(valor,
               style: TextStyle(
                 fontSize: grande ? 20 : 14,
                 fontWeight: grande ? FontWeight.w700 : FontWeight.w600,
-                color: grande ? Colores.primario : Colores.texto,
+                color: grande ? p.primario : p.texto,
               )),
         ],
       ),
@@ -192,18 +168,19 @@ class _Fila extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.paleta;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icono, size: 20, color: Colores.primario),
+          Icon(icono, size: 20, color: p.primario),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(etiqueta, style: const TextStyle(fontSize: 12, color: Colores.secundario)),
+                Text(etiqueta, style: TextStyle(fontSize: 12, color: p.secundario)),
                 const SizedBox(height: 2),
                 Text(valor, style: const TextStyle(fontSize: 15)),
               ],

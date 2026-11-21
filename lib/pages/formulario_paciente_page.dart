@@ -64,6 +64,13 @@ class _FormularioPacientePageState extends State<FormularioPacientePage> {
       estatus: widget.paciente?.estatus ?? 'A',
     );
 
+    final duplicado = await ApiService.buscarDuplicado(p);
+    if (!mounted) return;
+    if (duplicado != null && !await _confirmarDuplicado(duplicado)) {
+      if (mounted) setState(() => _guardando = false);
+      return;
+    }
+
     try {
       final guardado = _editando ? await ApiService.editar(p) : await ApiService.crear(p);
       if (!mounted) return;
@@ -78,6 +85,30 @@ class _FormularioPacientePageState extends State<FormularioPacientePage> {
     } finally {
       if (mounted) setState(() => _guardando = false);
     }
+  }
+
+  Future<bool> _confirmarDuplicado(Paciente d) async {
+    final pal = context.paleta;
+    final r = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Posible duplicado'),
+        content: Text('Ya existe el paciente #${d.idPaciente} ${d.nombreCompleto} '
+            'con el mismo teléfono${d.activo ? '' : ' (cancelado)'}. ¿Guardar de todos modos?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            style: TextButton.styleFrom(foregroundColor: pal.secundario),
+            child: const Text('Revisar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+    return r == true;
   }
 
   @override
@@ -203,8 +234,8 @@ class _Seccion extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 10),
       child: Text(texto,
-          style: const TextStyle(
-              fontSize: 13, fontWeight: FontWeight.w600, color: Colores.secundario)),
+          style: TextStyle(
+              fontSize: 13, fontWeight: FontWeight.w600, color: context.paleta.secundario)),
     );
   }
 }
@@ -221,12 +252,12 @@ class _VistaImc extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        border: Border.all(color: Colores.borde),
+        border: Border.all(color: context.paleta.borde),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
-          const Text('IMC', style: TextStyle(color: Colores.secundario)),
+          Text('IMC', style: TextStyle(color: context.paleta.secundario)),
           const SizedBox(width: 12),
           Text(r.imc > 0 ? r.imc.toStringAsFixed(1) : '--',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),

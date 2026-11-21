@@ -10,6 +10,8 @@ class Paciente {
   final String estatus;
   final double imc;
   final String categoriaImc;
+  final DateTime? fechaRegistro;
+  final DateTime? fechaModificacion;
 
   const Paciente({
     required this.idPaciente,
@@ -23,6 +25,8 @@ class Paciente {
     this.estatus = 'A',
     this.imc = 0,
     this.categoriaImc = '',
+    this.fechaRegistro,
+    this.fechaModificacion,
   });
 
   bool get activo => estatus == 'A';
@@ -36,6 +40,8 @@ class Paciente {
     return (a + b).toUpperCase();
   }
 
+  static DateTime? _fecha(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
+
   factory Paciente.fromJson(Map<String, dynamic> j) => Paciente(
         idPaciente: j['idPaciente'] as int,
         nombre: j['nombre'] ?? '',
@@ -48,6 +54,8 @@ class Paciente {
         estatus: j['estatus'] ?? 'A',
         imc: (j['imc'] as num?)?.toDouble() ?? 0,
         categoriaImc: j['categoriaImc'] ?? '',
+        fechaRegistro: _fecha(j['fechaRegistro']),
+        fechaModificacion: _fecha(j['fechaModificacion']),
       );
 
   Map<String, dynamic> toJson() => {
@@ -68,12 +76,15 @@ class Paciente {
   if (peso <= 0 || alturaCm <= 0) return (imc: 0, categoria: '');
   final m = alturaCm / 100;
   final imc = double.parse((peso / (m * m)).toStringAsFixed(1));
-  final categoria = imc < 18.5
-      ? 'Bajo peso'
-      : imc < 25
-          ? 'Normal'
-          : imc < 30
-              ? 'Sobrepeso'
-              : 'Obesidad';
-  return (imc: imc, categoria: categoria);
+  return (imc: imc, categoria: categoriaImc(imc));
 }
+
+String categoriaImc(double imc) => imc < 18.5
+    ? 'Bajo peso'
+    : imc < 25
+        ? 'Normal'
+        : imc < 30
+            ? 'Sobrepeso'
+            : 'Obesidad';
+
+const categoriasImc = ['Bajo peso', 'Normal', 'Sobrepeso', 'Obesidad'];
