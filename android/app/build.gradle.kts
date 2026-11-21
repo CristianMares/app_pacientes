@@ -1,6 +1,8 @@
+import java.util.Properties
+
 // Llave fija para firmar. En CI se crea key.properties desde los secrets del repo;
 // si no existe se firma con la llave de depuración.
-val llave = java.util.Properties().apply {
+val llave = Properties().apply {
     val f = rootProject.file("key.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
