@@ -119,14 +119,16 @@ ThemeData crearTema(Brightness brillo, {bool fuentesGoogle = true}) {
     systemNavigationBarIconBrightness: p.oscuro ? Brightness.light : Brightness.dark,
   );
 
+  final textos = (fuentesGoogle
+          ? GoogleFonts.interTextTheme(base.textTheme)
+          : base.textTheme.apply(fontFamily: 'Inter'))
+      .apply(bodyColor: p.texto, displayColor: p.texto);
+  // Los estilos que se definen a mano también llevan la fuente de la app
+  TextStyle estilo(TextStyle t) =>
+      fuentesGoogle ? GoogleFonts.inter(textStyle: t) : t.copyWith(fontFamily: 'Inter');
+
   return base.copyWith(
-    textTheme: (fuentesGoogle
-            ? GoogleFonts.interTextTheme(base.textTheme)
-            : base.textTheme.apply(fontFamily: 'Inter'))
-        .apply(
-      bodyColor: p.texto,
-      displayColor: p.texto,
-    ),
+    textTheme: textos,
     iconTheme: IconThemeData(color: p.texto),
     appBarTheme: AppBarTheme(
       backgroundColor: p.fondo,
@@ -149,13 +151,13 @@ ThemeData crearTema(Brightness brillo, {bool fuentesGoogle = true}) {
       errorBorder: OutlineInputBorder(borderRadius: radio, borderSide: BorderSide(color: p.cancelado)),
       focusedErrorBorder: OutlineInputBorder(
           borderRadius: radio, borderSide: BorderSide(color: p.cancelado, width: 1.5)),
-      labelStyle: TextStyle(color: p.secundario),
-      floatingLabelStyle: TextStyle(color: p.primario),
-      hintStyle: TextStyle(color: p.secundario),
-      suffixStyle: TextStyle(color: p.secundario),
+      labelStyle: estilo(TextStyle(color: p.secundario)),
+      floatingLabelStyle: estilo(TextStyle(color: p.primario)),
+      hintStyle: estilo(TextStyle(color: p.secundario)),
+      suffixStyle: estilo(TextStyle(color: p.secundario)),
       prefixIconColor: p.secundario,
       suffixIconColor: p.secundario,
-      errorStyle: TextStyle(color: p.cancelado),
+      errorStyle: estilo(TextStyle(color: p.cancelado)),
     ),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: p.primario,
@@ -170,7 +172,7 @@ ThemeData crearTema(Brightness brillo, {bool fuentesGoogle = true}) {
         disabledForegroundColor: p.secundario,
         minimumSize: const Size.fromHeight(52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        textStyle: estilo(TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -179,7 +181,7 @@ ThemeData crearTema(Brightness brillo, {bool fuentesGoogle = true}) {
         minimumSize: const Size.fromHeight(52),
         side: BorderSide(color: p.borde),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        textStyle: estilo(TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -197,8 +199,8 @@ ThemeData crearTema(Brightness brillo, {bool fuentesGoogle = true}) {
     dialogTheme: DialogThemeData(
       backgroundColor: p.superficie,
       surfaceTintColor: Colors.transparent,
-      titleTextStyle: TextStyle(color: p.texto, fontSize: 18, fontWeight: FontWeight.w700),
-      contentTextStyle: TextStyle(color: p.secundario, fontSize: 15, height: 1.4),
+      titleTextStyle: estilo(TextStyle(color: p.texto, fontSize: 18, fontWeight: FontWeight.w700)),
+      contentTextStyle: estilo(TextStyle(color: p.secundario, fontSize: 15, height: 1.4)),
     ),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: p.superficie,
@@ -208,7 +210,7 @@ ThemeData crearTema(Brightness brillo, {bool fuentesGoogle = true}) {
     popupMenuTheme: PopupMenuThemeData(
       color: p.superficie,
       surfaceTintColor: Colors.transparent,
-      textStyle: TextStyle(color: p.texto, fontSize: 15),
+      textStyle: estilo(TextStyle(color: p.texto, fontSize: 15)),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: p.borde),
@@ -219,7 +221,7 @@ ThemeData crearTema(Brightness brillo, {bool fuentesGoogle = true}) {
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       backgroundColor: p.oscuro ? const Color(0xFFE4ECEC) : const Color(0xFF1C2526),
-      contentTextStyle: TextStyle(color: p.oscuro ? const Color(0xFF1C2526) : Colors.white),
+      contentTextStyle: estilo(TextStyle(color: p.oscuro ? const Color(0xFF1C2526) : Colors.white)),
       actionTextColor: p.oscuro ? Paleta.clara.primario : Paleta.oscura.primario,
     ),
   );

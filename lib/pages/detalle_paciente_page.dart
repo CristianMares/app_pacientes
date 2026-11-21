@@ -116,7 +116,7 @@ class _DetallePacientePageState extends State<DetallePacientePage> {
                     onPressed: _procesando ? null : _cambiarEstatus,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: p.cancelado,
-                      side: BorderSide(color: p.canceladoFondo, width: 1.5),
+                      side: BorderSide(color: p.cancelado.withValues(alpha: 0.45), width: 1.5),
                     ),
                     child: const Text('Cancelar paciente'),
                   )
